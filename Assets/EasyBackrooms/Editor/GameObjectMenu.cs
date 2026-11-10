@@ -5,30 +5,39 @@ namespace EasyBackrooms.Editor
 {
     public static class GameObjectMenu
     {
-        [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 10)]
-        static void CreateLayoutPreview(MenuCommand command)
+        [MenuItem("GameObject/EasyBackrooms/Chunk Builder", false, 10)]
+        static void CreateChunkBuilder(MenuCommand command)
         {
-            var go = new GameObject("Backrooms Layout Preview");
-            var preview = go.AddComponent<LayoutPreview>();
-            preview.profile = FindFirstProfile();
+            var builder = Create<ChunkBuilder>("Backrooms", command);
 
-            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
-            Undo.RegisterCreatedObjectUndo(go, "Create Layout Preview");
-            Selection.activeObject = go;
+            // Grabs assets so you dont have to
+            builder.profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+            builder.theme = EditorAssetUtil.FindFirst<BackroomsTheme>();
 
-            if (preview.profile == null)
-                Debug.LogWarning("EasyBackrooms: no profile found. Right click in the Project window and pick Create > EasyBackrooms > Default Profile, then drag it onto the preview.");
+            if (builder.profile == null || builder.theme == null)
+                Debug.LogWarning("EasyBackrooms: missing a profile or theme. Right click in the Project window and pick Create > EasyBackrooms > Default Profile and Default Theme.");
+            else
+                builder.Build();
         }
 
-        static BackroomsProfile FindFirstProfile()
+        [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 11)]
+        static void CreateLayoutPreview(MenuCommand command)
         {
-            // Grabs a profile so you dont have to
-            foreach (string guid in AssetDatabase.FindAssets("t:" + nameof(BackroomsProfile)))
-            {
-                var profile = AssetDatabase.LoadAssetAtPath<BackroomsProfile>(AssetDatabase.GUIDToAssetPath(guid));
-                if (profile != null) return profile;
-            }
-            return null;
+            var preview = Create<LayoutPreview>("Backrooms Layout Preview", command);
+            preview.profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+
+            if (preview.profile == null)
+                Debug.LogWarning("EasyBackrooms: no profile found. Right click in the Project window and pick Create > EasyBackrooms > Default Profile.");
+        }
+
+        static T Create<T>(string name, MenuCommand command) where T : Component
+        {
+            var go = new GameObject(name);
+            var component = go.AddComponent<T>();
+            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
+            Undo.RegisterCreatedObjectUndo(go, "Create " + name);
+            Selection.activeObject = go;
+            return component;
         }
     }
 }
