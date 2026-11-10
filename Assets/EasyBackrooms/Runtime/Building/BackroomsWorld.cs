@@ -106,6 +106,34 @@ namespace EasyBackrooms
             return new Vector2Int(Mathf.FloorToInt(local.x / s), Mathf.FloorToInt(local.z / s));
         }
 
+        // Open floor nearest a chunk middle
+        public Vector3 FindSpawnPoint(Vector2Int chunk = default)
+        {
+            if (profile == null) return transform.position;
+
+            var layout = LayoutGenerator.Generate(profile, chunk);
+            int n = layout.Size;
+            float c = profile.cellSize;
+            float best = float.MaxValue;
+            var pick = new Vector2Int(n / 2, n / 2);
+
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    if (layout.GetCell(x, y) != CellKind.Open) continue;
+                    float d = (new Vector2(x, y) - new Vector2(n * 0.5f, n * 0.5f)).sqrMagnitude;
+                    if (d >= best) continue;
+                    best = d;
+                    pick = new Vector2Int(x, y);
+                }
+            }
+
+            float size = profile.ChunkWorldSize;
+            var local = new Vector3(chunk.x * size + (pick.x + 0.5f) * c, 0.05f, chunk.y * size + (pick.y + 0.5f) * c);
+            return transform.TransformPoint(local);
+        }
+
         // Call this after changing the profile
         public void Rebuild()
         {

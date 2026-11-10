@@ -22,7 +22,11 @@ namespace EasyBackrooms
         [Tooltip("Whether this surface casts shadows.")]
         public ShadowCastingMode shadows = ShadowCastingMode.On;
 
-        public bool Active => active;
+        public bool Active
+        {
+            get => active;
+            set => active = value;
+        }
 
         public abstract void Build(in BuildContext context, MeshData mesh);
 

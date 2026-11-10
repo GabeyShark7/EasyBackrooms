@@ -6,16 +6,16 @@ namespace EasyBackrooms
     public sealed class LightPanelStage : LayoutStage
     {
         [Min(1), Tooltip("Cells between light panels.")]
-        public int spacing = 2;
+        public int spacing = 1;
 
-        [Min(0), Tooltip("Shifts the light grid. 1 keeps lights off the pillar grid.")]
+        [Min(0), Tooltip("Shifts the light grid when Spacing is above 1.")]
         public int offset = 1;
 
         [Range(0f, 1f), Tooltip("Chance a grid spot actually gets a panel.")]
-        public float chance = 0.9f;
+        public float chance = 0.85f;
 
         [Range(0f, 1f), Tooltip("Chance a panel is burnt out and dark.")]
-        public float deadChance = 0.12f;
+        public float deadChance = 0.1f;
 
         public override void Apply(ChunkLayout layout, ref DetRandom rng)
         {

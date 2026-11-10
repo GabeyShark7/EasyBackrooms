@@ -35,6 +35,7 @@ namespace EasyBackrooms
         public int Size { get; }
         public Vector2Int Coord { get; }
         public uint Seed { get; }
+        public int WorldSeed { get; }
 
         readonly CellKind[] cells;
         readonly bool[] reserved;
@@ -45,17 +46,21 @@ namespace EasyBackrooms
         // Edges are locked so chunks line up
         internal bool BorderLocked = true;
 
-        public ChunkLayout(int size, Vector2Int coord, uint seed)
+        public ChunkLayout(int size, Vector2Int coord, uint seed, int worldSeed = 0)
         {
             Size = size;
             Coord = coord;
             Seed = seed;
+            WorldSeed = worldSeed;
             cells = new CellKind[size * size];
             reserved = new bool[size * size];
             flags = new CellFlags[size * size];
             vWalls = new bool[(size + 1) * size];
             hWalls = new bool[size * (size + 1)];
         }
+
+        // Cell position across the whole world
+        public Vector2Int WorldCell(int x, int y) => new Vector2Int(Coord.x * Size + x, Coord.y * Size + y);
 
         public bool InBounds(int x, int y)
         {

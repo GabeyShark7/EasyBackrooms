@@ -15,13 +15,20 @@ namespace EasyBackrooms
         public Color fogColor = new Color(0.24f, 0.21f, 0.09f);
 
         [Range(0f, 0.3f)]
-        public float fogDensity = 0.04f;
+        public float fogDensity = 0.028f;
 
-        [Header("Ambient")]
-        [Tooltip("Lights up the spots no real light reaches.")]
+        [Header("Fake Bounce Light")]
+        [Tooltip("Fakes light bouncing around the room since it cant be baked in an endless world.")]
         public bool setAmbient = true;
 
-        public Color ambientColor = new Color(0.34f, 0.29f, 0.12f);
+        [Tooltip("Light hitting the floor from above.")]
+        public Color floorAmbient = new Color(0.16f, 0.14f, 0.06f);
+
+        [Tooltip("Light hitting the walls from the side.")]
+        public Color wallAmbient = new Color(0.26f, 0.22f, 0.09f);
+
+        [Tooltip("Light bouncing up off the carpet onto the ceiling.")]
+        public Color ceilingAmbient = new Color(0.34f, 0.29f, 0.13f);
 
         [Range(0f, 1f), Tooltip("Lower stops the outdoor sky showing in reflections.")]
         public float reflectionIntensity = 0.15f;
@@ -42,8 +49,10 @@ namespace EasyBackrooms
 
             if (setAmbient)
             {
-                RenderSettings.ambientMode = AmbientMode.Flat;
-                RenderSettings.ambientLight = ambientColor;
+                RenderSettings.ambientMode = AmbientMode.Trilight;
+                RenderSettings.ambientSkyColor = floorAmbient;
+                RenderSettings.ambientEquatorColor = wallAmbient;
+                RenderSettings.ambientGroundColor = ceilingAmbient;
             }
 
             RenderSettings.reflectionIntensity = reflectionIntensity;

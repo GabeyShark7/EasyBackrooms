@@ -21,7 +21,7 @@ namespace EasyBackrooms
         public float tileGrid = 0.8f;
 
         [Tooltip("Panel size counted in ceiling tiles.")]
-        public Vector2Int panelTiles = new Vector2Int(2, 1);
+        public Vector2Int panelTiles = new Vector2Int(1, 1);
 
         [Tooltip("Nudge this if your tile lines dont sit where the panels snap.")]
         public Vector2 gridOffset = Vector2.zero;
@@ -32,10 +32,10 @@ namespace EasyBackrooms
 
         [Header("Placement")]
         [Min(0.001f), Tooltip("How far the panel hangs below the ceiling.")]
-        public float drop = 0.01f;
+        public float drop = 0.02f;
 
         [Min(0f), Tooltip("How far below the panel the real light sits.")]
-        public float lightDrop = 0.15f;
+        public float lightDrop = 0.04f;
 
         void Reset()
         {

@@ -1,0 +1,24 @@
+{
+  "name": "com.gabeyshark.easybackrooms",
+  "displayName": "EasyBackrooms",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Drop-in procedural backrooms generator for URP. Endless or fixed seeded levels built from swappable layout stages and surface builders, with realistic panel lighting, a first-person player and bring-your-own textures and sounds.",
+  "license": "MIT",
+  "keywords": [
+    "backrooms",
+    "procedural",
+    "generator",
+    "level",
+    "horror",
+    "urp"
+  ],
+  "author": {
+    "name": "Gabe Alvarado",
+    "url": "https://github.com/GabeyShark7"
+  },
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "17.3.0",
+    "com.unity.inputsystem": "1.17.0"
+  }
+}

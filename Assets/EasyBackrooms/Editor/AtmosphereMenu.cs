@@ -9,45 +9,29 @@ namespace EasyBackrooms.Editor
     public static class AtmosphereMenu
     {
         [MenuItem("GameObject/EasyBackrooms/Atmosphere", false, 12)]
-        static void CreateAtmosphere(MenuCommand command)
+        static void Menu(MenuCommand command)
         {
-            var go = new GameObject("Backrooms Atmosphere");
-            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
-            Undo.RegisterCreatedObjectUndo(go, "Create Backrooms Atmosphere");
-
-            go.AddComponent<BackroomsAtmosphere>();
-
-            var volume = go.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.sharedProfile = CreateProfile();
-
-            var cam = Camera.main;
-            if (cam != null)
-            {
-                var data = cam.GetUniversalAdditionalCameraData();
-                Undo.RecordObject(data, "Enable Post Processing");
-                data.renderPostProcessing = true;
-            }
-
-            // The sun ruins the mood so its off
-            foreach (var light in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
-            {
-                if (light.type != LightType.Directional || !light.gameObject.activeSelf) continue;
-                Undo.RecordObject(light.gameObject, "Disable Sun");
-                light.gameObject.SetActive(false);
-                Debug.Log($"EasyBackrooms: turned off {light.name} so the backrooms stay indoors. Turn it back on if you want it.", light);
-            }
-
-            Selection.activeObject = go;
+            BackroomsSetup.CreateAtmosphere(command.context as GameObject, FolderNearProfile());
         }
 
-        static VolumeProfile CreateProfile()
+        public static void AddVolume(GameObject go, string folder)
         {
-            string folder = "Assets";
-            var backroomsProfile = EditorAssetUtil.FindFirst<BackroomsProfile>();
-            if (backroomsProfile != null)
-                folder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(backroomsProfile)).Replace('\\', '/');
+            var volume = go.AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = CreateProfile(folder);
+        }
 
+        static string FolderNearProfile()
+        {
+            var profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+            return profile != null
+                ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(profile)).Replace('\\', '/')
+                : BackroomsSetup.DefaultFolder;
+        }
+
+        static VolumeProfile CreateProfile(string folder)
+        {
+            folder = EditorAssetUtil.EnsureFolder(folder);
             string path = AssetDatabase.GenerateUniqueAssetPath(folder + "/BackroomsVolume.asset");
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
             AssetDatabase.CreateAsset(profile, path);
@@ -56,7 +40,12 @@ namespace EasyBackrooms.Editor
             bloom.intensity.Override(1.1f);
             bloom.threshold.Override(0.9f);
             bloom.scatter.Override(0.75f);
-            bloom.tint.Override(new Color(1f, 0.93f, 0.75f));
+            bloom.tint.Override(new Color(1f, 0.96f, 0.85f));
+            bloom.highQualityFiltering.Override(true);
+
+            // A touch of old camera lens
+            var fringe = Add<ChromaticAberration>(profile);
+            fringe.intensity.Override(0.08f);
 
             var grain = Add<FilmGrain>(profile);
             grain.type.Override(FilmGrainLookup.Medium1);

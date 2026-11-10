@@ -7,7 +7,7 @@ namespace EasyBackrooms
         public static ChunkLayout Generate(BackroomsProfile profile, Vector2Int coord)
         {
             int size = Mathf.Max(4, profile.chunkCells);
-            var layout = new ChunkLayout(size, coord, Hash.Of(profile.seed, coord.x, coord.y));
+            var layout = new ChunkLayout(size, coord, Hash.Of(profile.seed, coord.x, coord.y), profile.seed);
 
             if (profile.border != null) BuildBorders(profile, layout);
 

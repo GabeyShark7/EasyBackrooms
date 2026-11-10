@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,77 +7,73 @@ namespace EasyBackrooms.Editor
     public static class GameObjectMenu
     {
         [MenuItem("GameObject/EasyBackrooms/Backrooms World", false, 10)]
-        static void CreateBackroomsWorld(MenuCommand command)
+        static void World(MenuCommand command)
         {
-            var world = Create<BackroomsWorld>("Backrooms", command);
-
             // Grabs assets so you dont have to
-            world.profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
-            world.theme = EditorAssetUtil.FindFirst<BackroomsTheme>();
-
-            if (world.profile == null || world.theme == null)
-                Debug.LogWarning("EasyBackrooms: missing a profile or theme. Right click in the Project window and pick Create > EasyBackrooms > Default Profile and Default Theme.");
+            var world = BackroomsSetup.CreateWorld(command.context as GameObject,
+                EditorAssetUtil.FindFirst<BackroomsProfile>(), EditorAssetUtil.FindFirst<BackroomsTheme>());
 
             var cam = Camera.main;
-            if (cam != null && cam.GetComponent<FlyCamera>() == null)
+            if (cam != null && cam.GetComponent<FlyCamera>() == null && cam.GetComponentInParent<FirstPersonPlayer>() == null)
             {
                 Undo.AddComponent<FlyCamera>(cam.gameObject);
                 Undo.RecordObject(cam.transform, "Move Camera");
-                cam.transform.position = new Vector3(1f, 1.6f, 1f);
+                cam.transform.position = world.FindSpawnPoint() + Vector3.up * 1.6f;
             }
         }
 
         [MenuItem("GameObject/EasyBackrooms/Backrooms Lights", false, 11)]
-        static void CreateLights(MenuCommand command)
+        static void Lights(MenuCommand command)
         {
-            var lights = Create<PanelLightManager>("Backrooms Lights", command);
-            lights.world = Object.FindFirstObjectByType<BackroomsWorld>();
-            lights.buzz = FindClip("backrooms_buzz");
-            lights.flicker = EditorAssetUtil.FindFirst<RandomFlicker>() ?? CreateFlicker();
+            BackroomsSetup.CreateLights(command.context as GameObject, Object.FindFirstObjectByType<BackroomsWorld>(), FolderNearProfile());
         }
 
-        static AudioClip FindClip(string fileName)
+        [MenuItem("GameObject/EasyBackrooms/Player", false, 13)]
+        static void Player(MenuCommand command)
         {
-            foreach (string guid in AssetDatabase.FindAssets(fileName + " t:AudioClip"))
-            {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (System.IO.Path.GetFileNameWithoutExtension(path) == fileName)
-                    return AssetDatabase.LoadAssetAtPath<AudioClip>(path);
-            }
-            return null;
+            BackroomsSetup.CreatePlayer(command.context as GameObject, Object.FindFirstObjectByType<BackroomsWorld>());
         }
 
-        static RandomFlicker CreateFlicker()
+        [MenuItem("GameObject/EasyBackrooms/Prop Spawner", false, 14)]
+        static void Props(MenuCommand command)
         {
-            string folder = "Assets";
-            var profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
-            if (profile != null)
-                folder = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(profile)).Replace('\\', '/');
-
-            var flicker = ScriptableObject.CreateInstance<RandomFlicker>();
-            AssetDatabase.CreateAsset(flicker, AssetDatabase.GenerateUniqueAssetPath(folder + "/RandomFlicker.asset"));
-            AssetDatabase.SaveAssets();
-            return flicker;
+            var go = new GameObject("Backrooms Props");
+            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
+            Undo.RegisterCreatedObjectUndo(go, "Create Prop Spawner");
+            go.AddComponent<PropSpawner>().world = Object.FindFirstObjectByType<BackroomsWorld>();
+            Selection.activeObject = go;
         }
 
-        [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 13)]
-        static void CreateLayoutPreview(MenuCommand command)
+        [MenuItem("GameObject/EasyBackrooms/NavMesh", false, 15)]
+        static void Nav(MenuCommand command)
         {
-            var preview = Create<LayoutPreview>("Backrooms Layout Preview", command);
+            var go = new GameObject("Backrooms NavMesh");
+            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
+            Undo.RegisterCreatedObjectUndo(go, "Create NavMesh");
+            go.AddComponent<BackroomsNavMesh>().world = Object.FindFirstObjectByType<BackroomsWorld>();
+            Selection.activeObject = go;
+        }
+
+        [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 30)]
+        static void Preview(MenuCommand command)
+        {
+            var go = new GameObject("Backrooms Layout Preview");
+            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
+            Undo.RegisterCreatedObjectUndo(go, "Create Layout Preview");
+            var preview = go.AddComponent<LayoutPreview>();
             preview.profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+            Selection.activeObject = go;
 
             if (preview.profile == null)
                 Debug.LogWarning("EasyBackrooms: no profile found. Right click in the Project window and pick Create > EasyBackrooms > Default Profile.");
         }
 
-        static T Create<T>(string name, MenuCommand command) where T : Component
+        static string FolderNearProfile()
         {
-            var go = new GameObject(name);
-            var component = go.AddComponent<T>();
-            GameObjectUtility.SetParentAndAlign(go, command.context as GameObject);
-            Undo.RegisterCreatedObjectUndo(go, "Create " + name);
-            Selection.activeObject = go;
-            return component;
+            var profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+            return profile != null
+                ? Path.GetDirectoryName(AssetDatabase.GetAssetPath(profile)).Replace('\\', '/')
+                : BackroomsSetup.DefaultFolder;
         }
     }
 }

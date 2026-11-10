@@ -6,10 +6,10 @@ namespace EasyBackrooms
     public sealed class RandomFlicker : FlickerPattern
     {
         [Range(0f, 1f), Tooltip("Share of lights that are faulty. The rest stay steady.")]
-        public float faultyShare = 0.1f;
+        public float faultyShare = 0.03f;
 
         [Range(0f, 1f), Tooltip("How much of the time a faulty light is acting up.")]
-        public float activity = 0.35f;
+        public float activity = 0.2f;
 
         [Min(0.1f), Tooltip("How fast it stutters while acting up.")]
         public float speed = 9f;
