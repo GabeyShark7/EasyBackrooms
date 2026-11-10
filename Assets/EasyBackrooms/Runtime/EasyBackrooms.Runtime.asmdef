@@ -1,7 +1,9 @@
 {
     "name": "EasyBackrooms.Runtime",
     "rootNamespace": "EasyBackrooms",
-    "references": [],
+    "references": [
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

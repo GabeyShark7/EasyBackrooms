@@ -4,23 +4,23 @@ namespace EasyBackrooms
 {
     public static class ChunkMesher
     {
-        public static ChunkView Build(ChunkLayout layout, BackroomsProfile profile, BackroomsTheme theme,
-            Transform parent, bool ownsEastEdge, bool ownsNorthEdge)
+        static readonly MeshData Shared = new MeshData();
+
+        // Fills a new or reused chunk view
+        public static void Build(ChunkView view, ChunkLayout layout, BackroomsProfile profile, BackroomsTheme theme,
+            ChunkEdges ownedEdges, ChunkEdges sealedEdges)
         {
             float size = profile.ChunkWorldSize;
             var origin = new Vector3(layout.Coord.x * size, 0f, layout.Coord.y * size);
 
-            var root = new GameObject($"Chunk {layout.Coord.x} {layout.Coord.y}");
-            root.transform.SetParent(parent, false);
-            root.transform.localPosition = origin;
-
-            var view = root.AddComponent<ChunkView>();
+            view.name = $"Chunk {layout.Coord.x} {layout.Coord.y}";
             view.Coord = layout.Coord;
+            view.transform.localPosition = origin;
 
-            var context = new BuildContext(layout, profile.cellSize, profile.wallHeight, origin, ownsEastEdge, ownsNorthEdge);
-            var data = new MeshData();
+            var context = new BuildContext(layout, profile.cellSize, profile.wallHeight, origin, ownedEdges, sealedEdges);
+            var data = Shared;
+            int used = 0;
 
-            // One child object per surface builder
             foreach (var builder in theme.builders)
             {
                 if (builder == null || !builder.Active) continue;
@@ -28,23 +28,29 @@ namespace EasyBackrooms
                 data.Clear();
                 data.SetUvMapping(origin, builder.tileSize);
                 builder.Build(context, data);
+
+                var part = view.GetPart(used++, builder.name);
+                part.GameObject.SetActive(!data.IsEmpty);
                 if (data.IsEmpty) continue;
 
-                var go = new GameObject(builder.name);
-                go.transform.SetParent(root.transform, false);
+                data.ApplyTo(part.Mesh);
+                part.Renderer.sharedMaterial = builder.material;
+                part.Renderer.shadowCastingMode = builder.shadows;
 
-                var mesh = data.ToMesh($"{root.name} {builder.name}");
-                view.Meshes.Add(mesh);
-
-                go.AddComponent<MeshFilter>().sharedMesh = mesh;
-                var renderer = go.AddComponent<MeshRenderer>();
-                renderer.sharedMaterial = builder.material;
-                renderer.shadowCastingMode = builder.shadows;
-
-                if (builder.addCollider) go.AddComponent<MeshCollider>().sharedMesh = mesh;
+                if (builder.addCollider)
+                {
+                    if (part.Collider == null) part.Collider = part.GameObject.AddComponent<MeshCollider>();
+                    part.Collider.sharedMesh = null;
+                    part.Collider.sharedMesh = part.Mesh;
+                    part.Collider.enabled = true;
+                }
+                else if (part.Collider != null)
+                {
+                    part.Collider.enabled = false;
+                }
             }
 
-            return view;
+            view.HidePartsFrom(used);
         }
     }
 }

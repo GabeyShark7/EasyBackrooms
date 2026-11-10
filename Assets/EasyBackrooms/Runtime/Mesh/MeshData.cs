@@ -87,9 +87,9 @@ namespace EasyBackrooms
             return new Vector2(Vector3.Dot(p, right), p.y);
         }
 
-        public Mesh ToMesh(string name)
+        public void ApplyTo(Mesh mesh)
         {
-            var mesh = new Mesh { name = name };
+            mesh.Clear();
             mesh.indexFormat = Vertices.Count > 65535 ? IndexFormat.UInt32 : IndexFormat.UInt16;
             mesh.SetVertices(Vertices);
             mesh.SetNormals(Normals);
@@ -97,7 +97,6 @@ namespace EasyBackrooms
             mesh.SetTriangles(Triangles, 0);
             mesh.RecalculateTangents();
             mesh.RecalculateBounds();
-            return mesh;
         }
     }
 }

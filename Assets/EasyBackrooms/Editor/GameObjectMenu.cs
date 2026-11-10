@@ -5,19 +5,25 @@ namespace EasyBackrooms.Editor
 {
     public static class GameObjectMenu
     {
-        [MenuItem("GameObject/EasyBackrooms/Chunk Builder", false, 10)]
-        static void CreateChunkBuilder(MenuCommand command)
+        [MenuItem("GameObject/EasyBackrooms/Backrooms World", false, 10)]
+        static void CreateBackroomsWorld(MenuCommand command)
         {
-            var builder = Create<ChunkBuilder>("Backrooms", command);
+            var world = Create<BackroomsWorld>("Backrooms", command);
 
             // Grabs assets so you dont have to
-            builder.profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
-            builder.theme = EditorAssetUtil.FindFirst<BackroomsTheme>();
+            world.profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+            world.theme = EditorAssetUtil.FindFirst<BackroomsTheme>();
 
-            if (builder.profile == null || builder.theme == null)
+            if (world.profile == null || world.theme == null)
                 Debug.LogWarning("EasyBackrooms: missing a profile or theme. Right click in the Project window and pick Create > EasyBackrooms > Default Profile and Default Theme.");
-            else
-                builder.Build();
+
+            var cam = Camera.main;
+            if (cam != null && cam.GetComponent<FlyCamera>() == null)
+            {
+                Undo.AddComponent<FlyCamera>(cam.gameObject);
+                Undo.RecordObject(cam.transform, "Move Camera");
+                cam.transform.position = new Vector3(1f, 1.6f, 1f);
+            }
         }
 
         [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 11)]

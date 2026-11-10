@@ -18,13 +18,22 @@ namespace EasyBackrooms
             float c = context.CellSize;
             float h = context.WallHeight;
             float t = thickness * 0.5f;
+            float full = n * c;
 
             // Neighbors build our east and north
-            int lastV = context.OwnsEastEdge ? n : n - 1;
-            int lastH = context.OwnsNorthEdge ? n : n - 1;
+            int lastV = context.Owns(ChunkEdges.East) ? n : n - 1;
+            int lastH = context.Owns(ChunkEdges.North) ? n : n - 1;
 
             for (int line = 0; line <= lastV; line++)
             {
+                float x = line * c;
+
+                if ((line == 0 && context.Seals(ChunkEdges.West)) || (line == n && context.Seals(ChunkEdges.East)))
+                {
+                    mesh.AddBox(new Vector3(x - t, 0f, -t), new Vector3(x + t, h, full + t), false, false);
+                    continue;
+                }
+
                 int y = 0;
                 while (y < n)
                 {
@@ -32,13 +41,20 @@ namespace EasyBackrooms
                     int start = y;
                     while (y < n && layout.HasVWall(line, y)) y++;
 
-                    float x = line * c;
                     mesh.AddBox(new Vector3(x - t, 0f, start * c - t), new Vector3(x + t, h, y * c + t), false, false);
                 }
             }
 
             for (int line = 0; line <= lastH; line++)
             {
+                float z = line * c;
+
+                if ((line == 0 && context.Seals(ChunkEdges.South)) || (line == n && context.Seals(ChunkEdges.North)))
+                {
+                    mesh.AddBox(new Vector3(-t, 0f, z - t), new Vector3(full + t, h, z + t), false, false);
+                    continue;
+                }
+
                 int x = 0;
                 while (x < n)
                 {
@@ -46,7 +62,6 @@ namespace EasyBackrooms
                     int start = x;
                     while (x < n && layout.HasHWall(x, line)) x++;
 
-                    float z = line * c;
                     mesh.AddBox(new Vector3(start * c - t, 0f, z - t), new Vector3(x * c + t, h, z + t), false, false);
                 }
             }
