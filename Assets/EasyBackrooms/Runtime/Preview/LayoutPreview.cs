@@ -17,6 +17,8 @@ namespace EasyBackrooms
         public Color pillarColor = new Color(0.6f, 0.55f, 0.3f, 1f);
         public Color roomColor = new Color(0.3f, 0.6f, 1f, 0.25f);
         public Color chunkColor = new Color(1f, 1f, 1f, 0.15f);
+        public Color lightColor = new Color(1f, 1f, 0.8f, 1f);
+        public Color deadLightColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
         void OnDrawGizmos()
         {
@@ -54,6 +56,12 @@ namespace EasyBackrooms
                     {
                         Gizmos.color = roomColor;
                         Gizmos.DrawCube(center, new Vector3(c, 0.02f, c));
+                    }
+
+                    if (layout.HasFlag(x, y, CellFlags.Light | CellFlags.DeadLight))
+                    {
+                        Gizmos.color = layout.HasFlag(x, y, CellFlags.Light) ? lightColor : deadLightColor;
+                        Gizmos.DrawCube(center + Vector3.up * h, new Vector3(0.6f, 0.02f, 1.2f));
                     }
 
                     var kind = layout.GetCell(x, y);

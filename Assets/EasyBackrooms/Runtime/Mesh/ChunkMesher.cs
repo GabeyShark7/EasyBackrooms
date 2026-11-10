@@ -19,6 +19,8 @@ namespace EasyBackrooms
 
             var context = new BuildContext(layout, profile.cellSize, profile.wallHeight, origin, ownedEdges, sealedEdges);
             var data = Shared;
+            var lightPoints = view.MutableLightPoints;
+            lightPoints.Clear();
             int used = 0;
 
             foreach (var builder in theme.builders)
@@ -28,6 +30,7 @@ namespace EasyBackrooms
                 data.Clear();
                 data.SetUvMapping(origin, builder.tileSize);
                 builder.Build(context, data);
+                builder.CollectLightPoints(context, lightPoints);
 
                 var part = view.GetPart(used++, builder.name);
                 part.GameObject.SetActive(!data.IsEmpty);

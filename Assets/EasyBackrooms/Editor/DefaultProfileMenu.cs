@@ -17,6 +17,7 @@ namespace EasyBackrooms.Editor
             profile.stages.Add(EditorAssetUtil.AddSubAsset<RandomWallsStage>(profile, "Random Walls"));
             profile.stages.Add(EditorAssetUtil.AddSubAsset<OpenRoomStage>(profile, "Open Rooms"));
             profile.stages.Add(EditorAssetUtil.AddSubAsset<PillarStage>(profile, "Pillars"));
+            profile.stages.Add(EditorAssetUtil.AddSubAsset<LightPanelStage>(profile, "Light Panels"));
             profile.stages.Add(EditorAssetUtil.AddSubAsset<ConnectivityStage>(profile, "Connectivity"));
 
             EditorUtility.SetDirty(profile);

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -24,5 +25,8 @@ namespace EasyBackrooms
         public bool Active => active;
 
         public abstract void Build(in BuildContext context, MeshData mesh);
+
+        // Add spots where real lights go
+        public virtual void CollectLightPoints(in BuildContext context, List<Vector3> points) { }
     }
 }

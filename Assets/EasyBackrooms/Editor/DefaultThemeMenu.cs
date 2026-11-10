@@ -14,12 +14,17 @@ namespace EasyBackrooms.Editor
             AssetDatabase.CreateAsset(theme, path);
 
             // Looks for textures by these names
+            // Tints pull your art toward mustard
             var carpet = MakeMaterial(theme, "Carpet", "carpet");
-            var carpetTint = new Color(1f, 0.93f, 0.72f);
-            carpet.SetColor("_BaseColor", carpetTint);
-            carpet.SetColor("_Color", carpetTint);
+            Tint(carpet, new Color(1.1f, 1.25f, 0.95f));
+
             var ceiling = MakeMaterial(theme, "Ceiling Tiles", "ceiling_tiles");
+            Tint(ceiling, new Color(0.98f, 0.9f, 0.6f));
+
             var wallpaper = MakeMaterial(theme, "Wallpaper", "wallpaper");
+            Tint(wallpaper, new Color(1f, 0.95f, 0.72f));
+            var litPanel = MakePanelMaterial(theme, "Light Panel", true);
+            var deadPanel = MakePanelMaterial(theme, "Dead Panel", false);
 
             var floor = EditorAssetUtil.AddSubAsset<FloorBuilder>(theme, "Floor");
             floor.material = carpet;
@@ -38,11 +43,28 @@ namespace EasyBackrooms.Editor
             var pillars = EditorAssetUtil.AddSubAsset<PillarBuilder>(theme, "Pillars");
             pillars.material = wallpaper;
             pillars.tileSize = 1f;
+            pillars.width = 1.2f;
+
+            var lit = EditorAssetUtil.AddSubAsset<LightPanelBuilder>(theme, "Light Panels");
+            lit.kind = PanelKind.Lit;
+            lit.tileGrid = roof.tileSize * 0.5f;
+            lit.material = litPanel;
+            lit.addCollider = false;
+            lit.shadows = ShadowCastingMode.Off;
+
+            var dead = EditorAssetUtil.AddSubAsset<LightPanelBuilder>(theme, "Dead Panels");
+            dead.kind = PanelKind.Dead;
+            dead.tileGrid = roof.tileSize * 0.5f;
+            dead.material = deadPanel;
+            dead.addCollider = false;
+            dead.shadows = ShadowCastingMode.Off;
 
             theme.builders.Add(floor);
             theme.builders.Add(roof);
             theme.builders.Add(walls);
             theme.builders.Add(pillars);
+            theme.builders.Add(lit);
+            theme.builders.Add(dead);
 
             EditorUtility.SetDirty(theme);
             AssetDatabase.SaveAssets();
@@ -50,13 +72,31 @@ namespace EasyBackrooms.Editor
             EditorGUIUtility.PingObject(theme);
         }
 
-        static Material MakeMaterial(BackroomsTheme theme, string name, string textureSet)
+        static void Tint(Material material, Color tint)
+        {
+            material.SetColor("_BaseColor", tint);
+            material.SetColor("_Color", tint);
+        }
+
+        static Material NewLit(string name)
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            var material = new Material(shader) { name = name };
+            return new Material(shader) { name = name };
+        }
 
-            var color = FindTexture(textureSet + "_color");
-            var normal = FindTexture(textureSet + "_normal");
+        static Material MakeMaterial(BackroomsTheme theme, string name, string textureSet)
+        {
+            var material = NewLit(name);
+
+            var color = FindTexture(textureSet + "_color", true);
+            var normal = FindTexture(textureSet + "_normal", true);
+            var smooth = FindTexture(textureSet + "_smooth", false);
+
+            if (smooth == null)
+            {
+                var rough = FindTexture(textureSet + "_rough", false);
+                if (rough != null) smooth = SmoothnessMapMaker.FromRoughness(rough);
+            }
 
             if (color != null)
             {
@@ -70,14 +110,43 @@ namespace EasyBackrooms.Editor
                 material.EnableKeyword("_NORMALMAP");
             }
 
-            // Roughness gets wired up in Phase 4
-            material.SetFloat("_Smoothness", 0.15f);
+            if (smooth != null)
+            {
+                material.SetTexture("_MetallicGlossMap", smooth);
+                material.EnableKeyword("_METALLICSPECGLOSSMAP");
+                material.SetFloat("_SmoothnessTextureChannel", 0f);
+                material.SetFloat("_Smoothness", 1f);
+            }
+            else
+            {
+                material.SetFloat("_Smoothness", 0.15f);
+            }
 
             AssetDatabase.AddObjectToAsset(material, theme);
             return material;
         }
 
-        static Texture2D FindTexture(string fileName)
+        static Material MakePanelMaterial(BackroomsTheme theme, string name, bool glowing)
+        {
+            var material = NewLit(name);
+            var baseColor = glowing ? Color.white : new Color(0.55f, 0.53f, 0.48f);
+            material.SetColor("_BaseColor", baseColor);
+            material.SetColor("_Color", baseColor);
+            material.SetFloat("_Smoothness", 0.3f);
+
+            if (glowing)
+            {
+                // Bright enough for bloom to catch
+                material.EnableKeyword("_EMISSION");
+                material.SetColor("_EmissionColor", new Color(1f, 0.95f, 0.8f) * 4f);
+                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            }
+
+            AssetDatabase.AddObjectToAsset(material, theme);
+            return material;
+        }
+
+        static Texture2D FindTexture(string fileName, bool warn)
         {
             foreach (string guid in AssetDatabase.FindAssets(fileName + " t:Texture2D"))
             {
@@ -86,7 +155,7 @@ namespace EasyBackrooms.Editor
                     return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             }
 
-            Debug.LogWarning($"EasyBackrooms: could not find a texture named {fileName}. Drag one onto the material yourself.");
+            if (warn) Debug.LogWarning($"EasyBackrooms: could not find a texture named {fileName}. Drag one onto the material yourself.");
             return null;
         }
     }

@@ -9,6 +9,19 @@ namespace EasyBackrooms
         Solid
     }
 
+    // User bits are free for your stages
+    [System.Flags]
+    public enum CellFlags : ushort
+    {
+        None = 0,
+        Light = 1,
+        DeadLight = 2,
+        User1 = 256,
+        User2 = 512,
+        User3 = 1024,
+        User4 = 2048
+    }
+
     public enum Side : byte
     {
         West,
@@ -25,6 +38,7 @@ namespace EasyBackrooms
 
         readonly CellKind[] cells;
         readonly bool[] reserved;
+        readonly CellFlags[] flags;
         readonly bool[] vWalls;
         readonly bool[] hWalls;
 
@@ -38,6 +52,7 @@ namespace EasyBackrooms
             Seed = seed;
             cells = new CellKind[size * size];
             reserved = new bool[size * size];
+            flags = new CellFlags[size * size];
             vWalls = new bool[(size + 1) * size];
             hWalls = new bool[size * (size + 1)];
         }
@@ -53,6 +68,15 @@ namespace EasyBackrooms
 
         public bool IsReserved(int x, int y) => reserved[x + y * Size];
         public void SetReserved(int x, int y, bool value) => reserved[x + y * Size] = value;
+
+        public CellFlags GetFlags(int x, int y) => flags[x + y * Size];
+        public bool HasFlag(int x, int y, CellFlags flag) => (flags[x + y * Size] & flag) != 0;
+
+        public void SetFlag(int x, int y, CellFlags flag, bool on)
+        {
+            int i = x + y * Size;
+            flags[i] = on ? flags[i] | flag : flags[i] & ~flag;
+        }
 
         public bool HasVWall(int line, int row) => vWalls[line + row * (Size + 1)];
         public bool HasHWall(int column, int line) => hWalls[column + line * Size];

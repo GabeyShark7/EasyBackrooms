@@ -53,6 +53,29 @@ namespace EasyBackrooms
             Triangles.Add(i + 3);
         }
 
+        // Same but you pick the UVs yourself
+        public void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 normal,
+            Vector2 uvA, Vector2 uvB, Vector2 uvC, Vector2 uvD)
+        {
+            if (Vector3.Dot(Vector3.Cross(b - a, c - a), normal) < 0f)
+            {
+                (b, d) = (d, b);
+                (uvB, uvD) = (uvD, uvB);
+            }
+
+            int i = Vertices.Count;
+            Vertices.Add(a); Vertices.Add(b); Vertices.Add(c); Vertices.Add(d);
+            Normals.Add(normal); Normals.Add(normal); Normals.Add(normal); Normals.Add(normal);
+            Uvs.Add(uvA); Uvs.Add(uvB); Uvs.Add(uvC); Uvs.Add(uvD);
+
+            Triangles.Add(i);
+            Triangles.Add(i + 1);
+            Triangles.Add(i + 2);
+            Triangles.Add(i);
+            Triangles.Add(i + 2);
+            Triangles.Add(i + 3);
+        }
+
         public void AddBox(Vector3 min, Vector3 max, bool top, bool bottom)
         {
             AddQuad(new Vector3(min.x, min.y, min.z), new Vector3(min.x, max.y, min.z),

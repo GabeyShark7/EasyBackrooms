@@ -26,7 +26,40 @@ namespace EasyBackrooms.Editor
             }
         }
 
-        [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 11)]
+        [MenuItem("GameObject/EasyBackrooms/Backrooms Lights", false, 11)]
+        static void CreateLights(MenuCommand command)
+        {
+            var lights = Create<PanelLightManager>("Backrooms Lights", command);
+            lights.world = Object.FindFirstObjectByType<BackroomsWorld>();
+            lights.buzz = FindClip("backrooms_buzz");
+            lights.flicker = EditorAssetUtil.FindFirst<RandomFlicker>() ?? CreateFlicker();
+        }
+
+        static AudioClip FindClip(string fileName)
+        {
+            foreach (string guid in AssetDatabase.FindAssets(fileName + " t:AudioClip"))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (System.IO.Path.GetFileNameWithoutExtension(path) == fileName)
+                    return AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            }
+            return null;
+        }
+
+        static RandomFlicker CreateFlicker()
+        {
+            string folder = "Assets";
+            var profile = EditorAssetUtil.FindFirst<BackroomsProfile>();
+            if (profile != null)
+                folder = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(profile)).Replace('\\', '/');
+
+            var flicker = ScriptableObject.CreateInstance<RandomFlicker>();
+            AssetDatabase.CreateAsset(flicker, AssetDatabase.GenerateUniqueAssetPath(folder + "/RandomFlicker.asset"));
+            AssetDatabase.SaveAssets();
+            return flicker;
+        }
+
+        [MenuItem("GameObject/EasyBackrooms/Layout Preview", false, 13)]
         static void CreateLayoutPreview(MenuCommand command)
         {
             var preview = Create<LayoutPreview>("Backrooms Layout Preview", command);

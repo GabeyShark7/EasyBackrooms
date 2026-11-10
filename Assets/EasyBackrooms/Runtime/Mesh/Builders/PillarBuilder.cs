@@ -6,7 +6,7 @@ namespace EasyBackrooms
     public sealed class PillarBuilder : SurfaceBuilder
     {
         [Min(0.05f), Tooltip("Width of each square pillar in meters.")]
-        public float width = 0.5f;
+        public float width = 1.2f;
 
         public override void Build(in BuildContext context, MeshData mesh)
         {

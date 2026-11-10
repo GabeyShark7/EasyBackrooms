@@ -23,7 +23,15 @@ namespace EasyBackrooms
         [SerializeField]
         List<SurfacePart> parts = new List<SurfacePart>();
 
+        [SerializeField]
+        List<Vector3> lightPoints = new List<Vector3>();
+
         public IReadOnlyList<SurfacePart> Parts => parts;
+
+        // Local spots where lit panels hang
+        public IReadOnlyList<Vector3> LightPoints => lightPoints;
+
+        internal List<Vector3> MutableLightPoints => lightPoints;
 
         internal SurfacePart GetPart(int index, string name)
         {
