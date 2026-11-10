@@ -2,6 +2,8 @@
 
 An open source, drop-in backrooms generator for Unity.
 
+![EasyBackrooms hallway](Docs/images/hallway.png)
+
 Endless seeded yellow hallways in one click. Every part of the generator is a swappable module, so you can replace any piece without touching the rest.
 
 ## Requirements
