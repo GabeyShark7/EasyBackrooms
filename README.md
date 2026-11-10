@@ -11,7 +11,6 @@ Endless seeded yellow hallways in one click. Every part of the generator is a sw
 - Unity 6000.3 or newer
 - Universal Render Pipeline (URP)
 - Input System package (set Active Input Handling to the new Input System)
-- [Git LFS](https://git-lfs.com) installed (`git lfs install`). The textures and sounds are stored in LFS. Without it they download as tiny pointer files and the materials show up pink or blank. Downloading the ZIP from GitHub has the same problem, so clone or use the Package Manager with Git LFS installed.
 
 ## Install
 
